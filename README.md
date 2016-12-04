@@ -3,7 +3,7 @@
 *At the moment this gem is tied to ActiveRecord but it's easy to change that
 by overriding default permitted methods for fields and resource*
 
-For building APIs (and not only) I have been using Pundit gem for years.
+For building APIs (and not only) I have been using [Pundit](https://github.com/elabs/pundit) gem for years.
 It's an awesome gem.
 However there is a tiny issue: Pundit has a black and white policy whereas in
 APIs usually you need a grayscale. The user might have access to a specific
@@ -26,6 +26,8 @@ You filter the associations based on the name of the association found.
 However the gem provides you an easy way to map any attributes/associations to
 the ones you have defined in your API/serializer.
 
+Note that this gem works perfectly well with [Pundit](https://github.com/elabs/pundit)
+but [Pundit](https://github.com/elabs/pundit) is not a requirement to use `flexible_permissions`
 
 ## Installation
 

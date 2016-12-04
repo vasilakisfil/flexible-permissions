@@ -7,7 +7,7 @@ For building APIs (and not only) I have been using Pundit gem for years.
 It's an awesome gem.
 However there is a tiny issue: Pundit has a black and white policy whereas in
 APIs usually you need a grayscale. The user might have access to a specific
-resource/action, only in certain attributes of that resource.
+resource/action, but only in certain attributes of that resource.
 
 An explanation can be found in some parts of
 [this](http://slides.com/vasilakisfil/apis-on-ruby-and-rails#) presentation, [a pundig issue](https://github.com/elabs/pundit/issues/212#issuecomment-64049328)

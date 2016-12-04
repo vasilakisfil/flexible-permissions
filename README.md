@@ -9,7 +9,9 @@ However there is a tiny issue: Pundit has a black and white policy whereas in
 APIs usually you need a grayscale. The user might have access to a specific
 resource/action, only in certain attributes of that resource.
 
-An explanation can be found in some parts of this presentation.
+An explanation can be found in some parts of
+[this](http://slides.com/vasilakisfil/apis-on-ruby-and-rails#) presentation, [a pundig issue](https://github.com/elabs/pundit/issues/212#issuecomment-64049328)
+and [this blog post](http://slides.com/vasilakisfil/apis-on-ruby-and-rails#/).
 
 ## So what this gem does?
 This gem allows you to specify in an easy way the following properties of a resource
@@ -51,22 +53,27 @@ Here is how a pundit policy looks like:
 
 ```ruby
 class UserPolicy < ApplicationPolicy
+  #allows only Admin and Regular roles, returns only Regular permissions
+  (given that the endpoint to create a user does not require authentication)
   def create?
     return Regular.new(record)
   end
 
+  #allows all roles but with different permissions
   def show?
     return Guest.new(record) unless user
     return Admin.new(record) if user.admin?
     return Regular.new(record)
   end
 
+  #allows only Admin and Regular roles, each with different permissions
   def update?
     raise Pundit::NotAuthorizedError unless user
     return Admin.new(record) if user.admin?
     return Regular.new(record)
   end
 
+  #allows only Admin and Regular roles, each with different permissions
   def destroy?
     raise Pundit::NotAuthorizedError unless user
     return Admin.new(record) if user.admin?
@@ -92,13 +99,14 @@ class UserPolicy < ApplicationPolicy
     end
 
     class Includes < self::Includes
+      #our API has `following` but our API exposes `followings`
       def transformations
         {following: :followings}
       end
     end
   end
 
-  #we chop fields for regular user
+  #we chop fields for regular user (but we still keep admins extra fields)
   class Regular < Admin
     class Fields < self::Fields
       def permitted
@@ -111,7 +119,7 @@ class UserPolicy < ApplicationPolicy
     end
   end
 
-  #and we chop even more for an admin
+  #and we chop even more for a guest
   class Guest < Regular
     class Fields < self::Fields
       def permitted
@@ -120,6 +128,35 @@ class UserPolicy < ApplicationPolicy
     end
   end
 end
+```
+
+For each role class you have 2 embedded classes:
+* `Fields` that sets up what fields (attributes) are allowed for this specific role
+* `Includes` that sets up what related resources (associations) are allowed for this specific role
+
+For each of those 2 classes, you can setup the final allowed attributes using the following methods:
+* `#permitted` speciffies the permitted attributes
+* `#defaults` specifies the defaults attributes (a subset of permitted attributes)
+* `#transformations` specifies any transformations from the db level to the API level
+
+If you have pundit, you can get the allowed attributes in your controller using the
+`authorize_with_permissions` method which uses underhood pundit's authorize method
+
+After that you get an object back that has the following methods:
+* `fields` returns the underrelying record
+* `includes` returns the underrelying record
+* `record` returns the underrelying record that you passed in to authorize
+* `collection` returns the underlying collection that you passed in to authorize
+
+Protip: `collection` is aliased to `record`.
+
+```ruby
+  def show
+    auth_user = authorize_with_permissions(@user)
+
+    render jsonapi: auth_user.record, serializer: Api::V1::UserSerializer,
+      fields: {user: auth_user.fields.concat(params[:fields])}
+  end
 ```
 
 ## Development

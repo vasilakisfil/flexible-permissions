@@ -146,7 +146,9 @@ If you have pundit, you can get the allowed attributes in your controller using 
 
 After that you get an object back that has the following methods:
 * `fields` returns the underrelying record
+  * If you pass in a param it will return the common `fields` between the asked and allowed fields (see example below). The param is expected to be an array.
 * `includes` returns the underrelying record
+  * If you pass in a param it will return the common `includes` between the asked and allowed includes. The param is expected to be an array.
 * `record` returns the underrelying record that you passed in to authorize
 * `collection` returns the underlying collection that you passed in to authorize
 
@@ -157,7 +159,7 @@ Protip: `collection` is aliased to `record`.
     auth_user = authorize_with_permissions(@user)
 
     render jsonapi: auth_user.record, serializer: Api::V1::UserSerializer,
-      fields: {user: auth_user.fields.concat(params[:fields])}
+      fields: {user: auth_user.fields(params[:fields])}
   end
 ```
 
